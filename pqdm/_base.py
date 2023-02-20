@@ -1,5 +1,6 @@
 import copy
 from concurrent.futures import Executor, as_completed
+from concurrent.futures._base import TimeoutError
 from typing import Any, Callable, Iterable, Union
 
 from tqdm import tqdm as tqdm_type
@@ -27,6 +28,7 @@ def _parallel_process(
     argument_type: str = 'direct',
     exception_behaviour: Union[Literal['ignore'], Literal['immediate'], Literal['deferred']] = 'ignore',
     tqdm_class: tqdm_type = tqdm_auto,
+    timeout = None,
     **kwargs
 ):
     executor_opts, tqdm_opts = _divide_kwargs(kwargs, executor)
@@ -44,17 +46,17 @@ def _parallel_process(
 
         if argument_type == ArgumentPassing.AS_KWARGS:
             futures = [
-                pool.submit(function, **a)
+                pool.submit(lambda: pool.submit(function, **a).result(timeout=timeout))
                 for a in tqdm_class(iterable, **submitting_opts)
             ]
         elif argument_type == ArgumentPassing.AS_ARGS:
             futures = [
-                pool.submit(function, *a)
+                pool.submit(lambda: pool.submit(function, *a).result(timeout=timeout))
                 for a in tqdm_class(iterable, **submitting_opts)
             ]
         else:
             futures = [
-                pool.submit(function, a)
+                pool.submit(lambda: pool.submit(function, a).result(timeout=timeout))
                 for a in tqdm_class(iterable, **submitting_opts)
             ]
 

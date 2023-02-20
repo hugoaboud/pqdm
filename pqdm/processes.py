@@ -17,6 +17,7 @@ def pqdm(
     bounded: bool = False,
     exception_behaviour: Union[Literal['ignore'], Literal['immediate'], Literal['deferred']] = 'ignore',
     tqdm_class: tqdm_type = tqdm_auto,
+    timeout = None,
     **kwargs
 ):
     return _parallel_process(
@@ -27,5 +28,6 @@ def pqdm(
         executor=BoundedProcessPoolExecutor if bounded else ProcessPoolExecutor,
         exception_behaviour=exception_behaviour,
         tqdm_class=tqdm_class,
+        timeout=timeout,
         **kwargs
     )
